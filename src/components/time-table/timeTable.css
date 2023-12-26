@@ -1,0 +1,77 @@
+.grid-time-matching {
+    min-height: 500px;    
+    border: 2px solid red;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.time-table-editor-day {
+    width: 100px;
+    height: 25px;
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #757575;
+    padding-left: 5px;
+    box-sizing: border-box;
+}
+
+.timetable-editor-grid {
+    display: grid;
+    grid-template-columns: repeat(7,1fr);
+    grid-template-rows: repeat(24,1fr);
+    grid-auto-flow: column;
+}
+
+.timetable-editor-grid-item {
+    color: #757575;
+    background-color: #f1f1f1;
+    width: 80px;
+    height: 25px;
+    box-sizing: border-box;
+    font-size: 8px;
+    border: 1px solid #fff;
+    cursor: pointer;
+    border-radius: 2px;
+    user-select: none;
+    text-align: center;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+timetable-editor-grid-item:not(.active):hover {
+    background-color: #cfd6f7;
+}
+
+.timetable-editor-grid-item.active {
+    background-color: #334bfa;
+    border-top: 0;
+    border-bottom: 0;
+    border-radius: 0;
+    color: #fff;
+}
+
+.timetable-editor-grid-item-hover-text {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.timetable-editor-grid-item:hover .timetable-editor-grid-item-hover-text {
+    opacity: 1;
+}
+
+.timetable-editor-grid-hour-axis-item {
+    width: 50px;
+    height: 25px;
+    font-size: 8px;
+    text-align: center;
+    box-sizing: border-box;
+    text-transform: uppercase;
+    color: #757575;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
