@@ -101,7 +101,7 @@ const TimeTableGrid = () => {
   
 
   return (
-    <main className='grid-time-matching'>
+    <main className=''>
       <div className='d-flex align-items-center'>
         <div>
           {/* timing map */}
