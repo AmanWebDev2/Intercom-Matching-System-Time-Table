@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { createData, mergeConsecutiveSchedules } from './timeTableData'
+import { createData, formatReadableTime, mergeConsecutiveSchedules } from './timeTableData'
 import "./timeTable.css";
 
 const TimeTableGrid = () => {
@@ -21,18 +21,42 @@ const TimeTableGrid = () => {
       setMatchingSchedule([selecedSchedule]);
       return;
     }
-    const isAlreadyExist = matchingSchedule.find((schedule) => schedule.start_minute == selecedSchedule.start_minute);
+
+    //  check if already exist and if schedule is consecutive decrease the schedule endminute by 60
+    const isAlreadyExist = matchingSchedule.find((sch)=>{
+      return (selecedSchedule.start_minute>=sch?.start_minute) &&( selecedSchedule?.end_minute <= sch.end_minute);
+    });
 
     if(isAlreadyExist) {
-      let filteredSchedule = matchingSchedule.filter((schedule) => (schedule.start_minute !== selecedSchedule.start_minute) && (schedule.end_minute !== selecedSchedule.end_minute));
-      setMatchingSchedule([...filteredSchedule]);
+      // check for if start and end min diff > 60 --> means consecutive timing selected
+      // 1. diselect from top
+      // 2. diselect from bottom
+      // 3. diselect from between
+
+      const filteredSchedule = matchingSchedule.filter((schedule)=>schedule.day == selecedSchedule.day);
+
+      const newSchedule = filteredSchedule.map((schedule)=>{
+        // diselect from top
+        if(schedule.end_minute === selecedSchedule.end_minute) {
+          return {...schedule, end_minute: schedule.end_minute-60, readableEndTime: formatReadableTime(schedule.end_minute-60)}
+        }else if(schedule.start_minute === selecedSchedule.start_minute) {
+        // diselect from bottom
+          return {...schedule,start_minute: selecedSchedule.start_minute+60,};
+        }else {
+          // how can osplit my object into two  
+          const firstPart = {...schedule, end_minute: selecedSchedule.start_minute}
+          const secondPart = {...schedule, start_minute: selecedSchedule.end_minute, end_minute: schedule.end_minute}
+          return [firstPart,secondPart]
+        }
+      })
+      
+      const flattenedNewSchedule = newSchedule.flat();
+      setMatchingSchedule([...flattenedNewSchedule]);
     }else {
       // check if selection is consecutive
       const sch = [...matchingSchedule,selecedSchedule];
       const data = mergeConsecutiveSchedules(sch);
       setMatchingSchedule(data);
-
-      // setMatchingSchedule(sch)
     }
 
   }
@@ -53,14 +77,20 @@ const TimeTableGrid = () => {
     const isConsecutive = matchingSchedule.find((sch)=>{
       return (schedule.start_minute>=sch?.start_minute) &&( schedule?.end_minute <= sch.end_minute) &&(schedule.start_minute==sch.start_minute);
     });
+    let readableStartTime = formatReadableTime(schedule.start_minute);
+    let readableEndTime = formatReadableTime(schedule.end_minute);
     if(isConsecutive) {
-      return `${day} ${isConsecutive.readableStartTime}-${isConsecutive.readableEndTime}`
+      readableStartTime = formatReadableTime(isConsecutive.start_minute);
+      readableEndTime = formatReadableTime(isConsecutive.end_minute);
+      return `${day} ${readableStartTime}-${readableEndTime}`
     }else {
       return <span className="timetable-editor-grid-item-hover-text">
-      {`${day} ${schedule.readableStartTime}`} 
+      {`${day} ${readableStartTime}`} 
     </span>
     }
   }
+
+  
 
   return (
     <main className='grid-time-matching'>
@@ -71,7 +101,7 @@ const TimeTableGrid = () => {
           {
             schedule.length > 0 && schedule[0].time.map((data,i)=>(
               <div key={i} className="timetable-editor-grid-hour-axis-item">
-                {data.readableStartTime}
+                {formatReadableTime(data.start_minute)}
               </div>
             ))
           }

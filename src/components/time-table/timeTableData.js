@@ -11,14 +11,14 @@ function createData() {
       for (let i = 0; i < minInADay / 60; i++) {
         let startTime = starting + i * 60;
         let endTime = starting + (i + 1) * 60;
-        let readableStartTime = formatReadableTime(startTime,d);
-        let readableEndTime = formatReadableTime(endTime,d);
+        // let readableStartTime = formatReadableTime(startTime,d);
+        // let readableEndTime = formatReadableTime(endTime,d);
   
         let obj = {
           start_minute: startTime,
           end_minute: endTime,
-          readableStartTime,
-          readableEndTime,
+          // readableStartTime,
+          // readableEndTime,
         };
   
         time.push(obj);
@@ -87,8 +87,6 @@ function createData() {
             day: schedule.day,
             start_minute: currentStartMinute,
             end_minute: currentEndMinute,
-            readableStartTime: formatReadableTime(currentStartMinute),
-            readableEndTime: formatReadableTime(currentEndMinute),
           });
   
           currentStartMinute = currentEndMinute;
