@@ -101,8 +101,8 @@ const TimeTableGrid = () => {
   
 
   return (
-    <main className=''>
-      <div className='d-flex align-items-center'>
+    <main className='grid-time-matching'>
+      <div className='d-flex align-items-center justify-content-center'>
         <div>
           {/* timing map */}
           <div className="timetable-editor-grid-hour-axis-item"></div>
