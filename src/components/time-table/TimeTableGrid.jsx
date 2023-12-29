@@ -33,25 +33,19 @@ const TimeTableGrid = () => {
       // 2. diselect from bottom
       // 3. diselect from between
 
-      const filteredSchedule = matchingSchedule.filter((schedule)=>schedule.day == selecedSchedule.day);
+      const newSchedule = splitSchedule(isAlreadyExist,selecedSchedule);
 
-      const newSchedule = filteredSchedule.map((schedule)=>{
-        // diselect from top
-        if(schedule.end_minute === selecedSchedule.end_minute) {
-          return {...schedule, end_minute: schedule.end_minute-60, readableEndTime: formatReadableTime(schedule.end_minute-60)}
-        }else if(schedule.start_minute === selecedSchedule.start_minute) {
-        // diselect from bottom
-          return {...schedule,start_minute: selecedSchedule.start_minute+60,};
-        }else {
-          // how can osplit my object into two  
-          const firstPart = {...schedule, end_minute: selecedSchedule.start_minute}
-          const secondPart = {...schedule, start_minute: selecedSchedule.end_minute, end_minute: schedule.end_minute}
-          return [firstPart,secondPart]
-        }
-      })
-      
-      const flattenedNewSchedule = newSchedule.flat();
-      setMatchingSchedule([...flattenedNewSchedule]);
+      if(Array.isArray(newSchedule)) {
+        const filteredSchedule = matchingSchedule.filter((schedule)=>schedule.day != newSchedule[0].day);
+        setMatchingSchedule([...filteredSchedule,...newSchedule]);
+
+      }else { 
+        const filteredSchedule = matchingSchedule.filter((sch)=>{
+          return !((selecedSchedule.start_minute>=sch?.start_minute) && ( selecedSchedule?.end_minute <= sch.end_minute));
+        });
+        setMatchingSchedule([...filteredSchedule,newSchedule]);
+      }
+
     }else {
       // check if selection is consecutive
       const sch = [...matchingSchedule,selecedSchedule];
@@ -59,6 +53,20 @@ const TimeTableGrid = () => {
       setMatchingSchedule(data);
     }
 
+  }
+
+  const splitSchedule=(schedule,selecedSchedule)=>{
+    if(schedule.end_minute === selecedSchedule.end_minute) {
+      return {...schedule, end_minute: schedule.end_minute-60}
+    }else if(schedule.start_minute === selecedSchedule.start_minute) {
+    // diselect from bottom
+      return {...schedule,start_minute: selecedSchedule.start_minute+60,};
+    }else {
+      // how can osplit my object into two  
+      const firstPart = {...schedule, end_minute: selecedSchedule.start_minute}
+      const secondPart = {...schedule, start_minute: selecedSchedule.end_minute, end_minute: schedule.end_minute}
+      return [firstPart,secondPart]
+    }
   }
 
   const handleIsActive=(data)=>{
