@@ -8,6 +8,7 @@ const TimeTableGrid = () => {
 
   useEffect(()=>{
     const data = createData();
+    console.log("data",data)
     setSchedule(data);
   },[]);
 
@@ -30,6 +31,8 @@ const TimeTableGrid = () => {
       const sch = [...matchingSchedule,selecedSchedule];
       const data = mergeConsecutiveSchedules(sch);
       setMatchingSchedule(data);
+
+      // setMatchingSchedule(sch)
     }
 
   }
@@ -38,7 +41,7 @@ const TimeTableGrid = () => {
     if(matchingSchedule.length==0){
       return false;
     }
-    const isFound = matchingSchedule.find((sch)=>sch?.start_minute === data?.start_minute);
+    const isFound = matchingSchedule.find((sch)=>(data.start_minute>=sch?.start_minute) &&( data?.end_minute <= sch.end_minute));
     if(isFound) {
       return true;
     }else {
@@ -46,10 +49,17 @@ const TimeTableGrid = () => {
     }
   }
 
-
-  
   const gridItemSelectionLogic=(schedule,day)=> {
-   return `${day} ${schedule.readableStartTime}-${schedule.readableEndTime}`
+    const isConsecutive = matchingSchedule.find((sch)=>{
+      return (schedule.start_minute>=sch?.start_minute) &&( schedule?.end_minute <= sch.end_minute) &&(schedule.start_minute==sch.start_minute);
+    });
+    if(isConsecutive) {
+      return `${day} ${isConsecutive.readableStartTime}-${isConsecutive.readableEndTime}`
+    }else {
+      return <span className="timetable-editor-grid-item-hover-text">
+      {`${day} ${schedule.readableStartTime}`} 
+    </span>
+    }
   }
 
   return (
@@ -78,11 +88,9 @@ const TimeTableGrid = () => {
                 data.time.map((min,i)=>{
                   return(
                     <div key={i} className={`timetable-editor-grid-item ${handleIsActive(min) && 'active'}`} onClick={(e)=>{handleSelectSchedule(e,{day:data.day,...min})}}>
-                      {handleIsActive(min) ? 
+                      {
                         gridItemSelectionLogic(min,data.day)
-                      :<span className="timetable-editor-grid-item-hover-text">
-                        {`${data.day} ${min.readableStartTime}`} 
-                      </span>}
+                      }
                     </div>
                   )
                 })
