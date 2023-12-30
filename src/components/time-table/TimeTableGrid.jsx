@@ -17,6 +17,22 @@ const TimeTableGrid = () => {
   },[matchingSchedule]);
 
   const handleSelectSchedule=(e,selecedSchedule)=>{
+
+    const isShiftPressed = e.shiftKey;
+
+    if(!isShiftPressed) {
+      handleSingleSelection(selecedSchedule);
+    }else {
+      if(matchingSchedule.length==0) {
+        handleSingleSelection(selecedSchedule);
+        return;
+      }
+      handleMultipleSelection(selecedSchedule);
+    }
+
+  }
+
+  const handleSingleSelection=(selecedSchedule)=>{
     if(matchingSchedule.length==0){
       setMatchingSchedule([selecedSchedule]);
       return;
@@ -27,7 +43,11 @@ const TimeTableGrid = () => {
       return (selecedSchedule.start_minute>=sch?.start_minute) &&( selecedSchedule?.end_minute <= sch.end_minute);
     });
 
-    if(isAlreadyExist) {
+    const isExactSelection = matchingSchedule.find((sch)=>{
+      return (selecedSchedule.start_minute==sch?.start_minute) &&( selecedSchedule?.end_minute == sch.end_minute);
+    });
+
+    if(isAlreadyExist && !isExactSelection) {
       // check for if start and end min diff > 60 --> means consecutive timing selected
       // 1. diselect from top
       // 2. diselect from bottom
@@ -36,8 +56,13 @@ const TimeTableGrid = () => {
       const newSchedule = splitSchedule(isAlreadyExist,selecedSchedule);
 
       if(Array.isArray(newSchedule)) {
-        const filteredSchedule = matchingSchedule.filter((schedule)=>schedule.day != newSchedule[0].day);
-        setMatchingSchedule([...filteredSchedule,...newSchedule]);
+        const temp = [...matchingSchedule];
+        const index = matchingSchedule.findIndex((sch)=>{
+          return (selecedSchedule.start_minute>=sch?.start_minute) &&( selecedSchedule?.end_minute <= sch.end_minute);
+        });
+        temp.splice(index,1)
+        // const filteredSchedule = matchingSchedule.filter((schedule)=>schedule.day != newSchedule[0].day);
+        setMatchingSchedule([...temp,...newSchedule]);
 
       }else { 
         const filteredSchedule = matchingSchedule.filter((sch)=>{
@@ -46,6 +71,13 @@ const TimeTableGrid = () => {
         setMatchingSchedule([...filteredSchedule,newSchedule]);
       }
 
+    }else if(isExactSelection){
+      const index = matchingSchedule.findIndex((sch)=>{
+        return (selecedSchedule.start_minute==sch?.start_minute) &&( selecedSchedule?.end_minute == sch.end_minute);
+      });
+      const temp = [...matchingSchedule];
+      temp.splice(index,1);
+      setMatchingSchedule([...temp]);
     }else {
       // check if selection is consecutive
       const sch = [...matchingSchedule,selecedSchedule];
@@ -54,6 +86,19 @@ const TimeTableGrid = () => {
     }
 
   }
+
+  const handleMultipleSelection = (selectedSchedule) => {
+    const schedules = [...matchingSchedule].filter((schedule)=>schedule.day != selectedSchedule.day);
+    const dayWiseSchedule = matchingSchedule.filter((schedule)=>schedule.day == selectedSchedule.day).sort((a,b)=>a.start_minute-b.start_minute);
+    const lastSchedule = dayWiseSchedule.pop();
+    if(selectedSchedule.end_minute < lastSchedule.end_minute) {
+      handleSingleSelection(selectedSchedule);
+      return;
+    }
+    lastSchedule.end_minute = selectedSchedule.end_minute;
+    dayWiseSchedule.push(lastSchedule);
+    setMatchingSchedule([...schedules,...dayWiseSchedule]);
+  };
 
   const splitSchedule=(schedule,selecedSchedule)=>{
     if(schedule.end_minute === selecedSchedule.end_minute) {
