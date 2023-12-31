@@ -89,14 +89,19 @@ const TimeTableGrid = () => {
 
   const handleMultipleSelection = (selectedSchedule) => {
     const schedules = [...matchingSchedule].filter((schedule)=>schedule.day != selectedSchedule.day);
-    const dayWiseSchedule = matchingSchedule.filter((schedule)=>schedule.day == selectedSchedule.day).sort((a,b)=>a.start_minute-b.start_minute);
-    const lastSchedule = dayWiseSchedule.pop();
-    if(selectedSchedule.end_minute < lastSchedule.end_minute) {
+    const dayWiseSchedule = matchingSchedule.filter((schedule)=>schedule.day == selectedSchedule.day);
+    const temp = [...dayWiseSchedule];
+    temp.push(selectedSchedule);
+    temp.sort((a,b)=>a.start_minute-b.start_minute);
+    
+    const index = temp.findIndex((schedule)=>schedule.start_minute == selectedSchedule.start_minute)-1;
+    const lastSchedule = temp[index];
+    if(index < 0) {
       handleSingleSelection(selectedSchedule);
       return;
     }
     lastSchedule.end_minute = selectedSchedule.end_minute;
-    dayWiseSchedule.push(lastSchedule);
+    //dayWiseSchedule.push(lastSchedule);
     setMatchingSchedule([...schedules,...dayWiseSchedule]);
   };
 
